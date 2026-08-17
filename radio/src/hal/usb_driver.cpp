@@ -33,5 +33,5 @@ bool usbPluggedInJoystickMode()
 
 bool usbPluggedInVCPMode()
 {
-  return usbPlugged() && getSelectedUsbMode() == USB_SERIAL_MODE;
+  return usbPlugged() && (getSelectedUsbMode() == USB_SERIAL_MODE || getSelectedUsbMode() == USB_CRSF_MODE);
 }
