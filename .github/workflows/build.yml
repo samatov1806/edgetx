@@ -24,8 +24,14 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/edgetx
           python3 $GITHUB_WORKSPACE/mypatch/.github/workflows/apply_patch.py
-      - name: Install toolchain
-        run: sudo apt-get update -qq && sudo apt-get install -y gcc-arm-none-eabi cmake build-essential
+      - name: Install ARM GCC 14.2
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y cmake build-essential python3 xz-utils
+          wget -q https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi.tar.xz
+          tar -xf arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi.tar.xz
+          sudo cp -r arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi/* /usr/local/
+          arm-none-eabi-gcc --version | head -1
       - name: Build TX16S
         run: |
           mkdir -p build
