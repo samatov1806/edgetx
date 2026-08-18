@@ -14,6 +14,7 @@ jobs:
           repository: EdgeTX/edgetx
           ref: main
           path: edgetx
+          submodules: recursive
       - name: Checkout patch script
         uses: actions/checkout@v4
         with:
@@ -27,19 +28,21 @@ jobs:
       - name: Install ARM GCC 14.2
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y cmake build-essential python3 xz-utils
+          sudo apt-get install -y cmake build-essential python3 wget xz-utils
           wget -q https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi.tar.xz
           tar -xf arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi.tar.xz
           sudo cp -r arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi/* /usr/local/
+          sudo ln -sf /usr/local/bin/arm-none-eabi-gcc /usr/bin/arm-none-eabi-gcc
           arm-none-eabi-gcc --version | head -1
       - name: Build TX16S
         run: |
+          cd $GITHUB_WORKSPACE/edgetx
           mkdir -p build
           cd build
-          cmake $GITHUB_WORKSPACE/edgetx -DPCB=X10 -DPCBREV=TX16S -DDEFAULT_MODE=2 -DTRANSLATIONS=EN -DRADIOMASTER_RELEASE=YES
+          cmake .. -DPCB=X10 -DPCBREV=TX16S -DDEFAULT_MODE=2 -DTRANSLATIONS=EN -DRADIOMASTER_RELEASE=YES
           make firmware -j$(nproc)
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
           name: edgetx-tx16s-crsf-usb
-          path: build/firmware.bin
+          path: ${{ github.workspace }}/edgetx/build/firmware.bin
