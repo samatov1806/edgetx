@@ -225,17 +225,17 @@ static void crossfireSendPulses(void* ctx, uint8_t* buffer, int16_t* channels, u
   auto drv_ctx = modulePortGetCtx(mod_st->tx);
   drv->sendBuffer(drv_ctx, buffer, p_buf - buffer);
 
-    // When USB Serial mode is active, also forward CRSF data to USB VCP
-    if (usbPluggedInVCPMode()) {
-      auto usb_drv = UsbSerialPort.driver;
-      auto len = p_buf - buffer;
-      for (uint8_t i = 0; i < len; i++) {
-        usb_drv->sendByte(nullptr, buffer[i]);
-      }
+  // When USB Serial mode is active, also forward CRSF data to USB VCP
+  if (usbPluggedInVCPMode()) {
+    auto usb_drv = UsbSerialPort.driver;
+    auto len = p_buf - buffer;
+    for (uint8_t i = 0; i < len; i++) {
+      usb_drv->sendByte(nullptr, buffer[i]);
     }
   }
+}
 
-  static bool _lenIsSane(uint32_t len)
+static bool _lenIsSane(uint32_t len)
 {
   // packet len must be at least 3 bytes (type + payload + crc)
   // and 2 bytes < MAX (hdr + len)

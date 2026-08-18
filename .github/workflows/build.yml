@@ -1,0 +1,57 @@
+name: Build EdgeTX firmware
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: EdgeTX/edgetx
+          ref: main
+      - name: Add USB CRSF patch
+        run: |
+          git apply - << 'PATCH'
+diff --git a/radio/src/pulses/crossfire.cpp b/radio/src/pulses/crossfire.cpp
+--- a/radio/src/pulses/crossfire.cpp
++++ b/radio/src/pulses/crossfire.cpp
+@@ -31,6 +31,7 @@
+ #include "crossfire.h"
+ #include "telemetry/crossfire.h"
++#include "hal/usb_driver.h"
+ 
+ #define CROSSFIRE_CH_BITS           11
+ #define CROSSFIRE_CENTER            0x3E0
+@@ -224,6 +225,15 @@ static void crossfireSendPulses(void* ctx, uint8_t* buffer, int16_t* channels, u
+   auto drv = modulePortGetSerialDrv(mod_st->tx);
+   auto drv_ctx = modulePortGetCtx(mod_st->tx);
+   drv->sendBuffer(drv_ctx, buffer, p_buf - buffer);
++
++  // Forward to USB VCP if Serial mode is active
++  if (usbPluggedInVCPMode()) {
++    auto usb_drv = UsbSerialPort.driver;
++    auto len = p_buf - buffer;
++    for (uint8_t i = 0; i < len; i++) {
++      usb_drv->sendByte(nullptr, buffer[i]);
++    }
++  }
+ }
+ 
+ static bool _lenIsSane(uint32_t len)
+PATCH
+      - name: Install toolchain
+        run: sudo apt-get update -qq && sudo apt-get install -y gcc-arm-none-eabi cmake build-essential
+      - name: Build TX16S MK3
+        run: |
+          mkdir -p build && cd build
+          cmake ../radio/src -DPCB=TX16S -DPCBREV=MK3 -DDEFAULT_MODE=2
+          make firmware -j$(nproc)
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: edgetx-tx16smk3-crsf-usb
+          path: build/firmware.bin
