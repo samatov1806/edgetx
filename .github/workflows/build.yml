@@ -13,6 +13,7 @@ jobs:
         with:
           repository: EdgeTX/edgetx
           ref: main
+          path: edgetx
       - name: Checkout patch script
         uses: actions/checkout@v4
         with:
@@ -20,16 +21,19 @@ jobs:
           ref: main
           path: mypatch
       - name: Apply USB CRSF patch
-        run: python3 mypatch/.github/workflows/apply_patch.py
+        run: |
+          cd $GITHUB_WORKSPACE/edgetx
+          python3 $GITHUB_WORKSPACE/mypatch/.github/workflows/apply_patch.py
       - name: Install toolchain
         run: sudo apt-get update -qq && sudo apt-get install -y gcc-arm-none-eabi cmake build-essential
-      - name: Build TX16S MK3
+      - name: Build TX16S
         run: |
-          mkdir -p build && cd build
-          cmake ../radio/src -DPCB=TX16S -DPCBREV=MK3 -DDEFAULT_MODE=2
+          mkdir -p build
+          cd build
+          cmake $GITHUB_WORKSPACE/edgetx -DPCB=X10 -DPCBREV=TX16S -DDEFAULT_MODE=2 -DTRANSLATIONS=EN -DRADIOMASTER_RELEASE=YES
           make firmware -j$(nproc)
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: edgetx-tx16smk3-crsf-usb
+          name: edgetx-tx16s-crsf-usb
           path: build/firmware.bin
