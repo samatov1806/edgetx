@@ -13,6 +13,7 @@ jobs:
         with:
           repository: EdgeTX/edgetx
           ref: main
+          path: edgetx
           submodules: recursive
 
       - name: Checkout patch script
@@ -21,7 +22,6 @@ jobs:
           repository: samatov1806/edgetx
           ref: main
           path: mypatch
-          submodules: recursive
 
       - name: Apply USB CRSF patch
         run: |
