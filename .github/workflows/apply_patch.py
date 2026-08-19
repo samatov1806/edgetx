@@ -17,7 +17,7 @@ content = content.replace(
 # 2. Add forwarding code after sendBuffer
 content = content.replace(
     'drv->sendBuffer(drv_ctx, buffer, p_buf - buffer);',
-    'drv->sendBuffer(drv_ctx, buffer, p_buf - buffer);\n\n  // Forward to USB VCP if Serial mode is active\n  if (usbPluggedInVCPMode()) {\n    auto usb_drv = UsbSerialPort.driver;\n    auto len = p_buf - buffer;\n    for (uint8_t i = 0; i < len; i++) {\n      usb_drv->sendByte(nullptr, buffer[i]);\n    }\n  }', 1)
+    'drv->sendBuffer(drv_ctx, buffer, p_buf - buffer);\\n\\n  // When USB Serial mode is active, also forward CRSF data to USB VCP\\n  if (usbPluggedInVCPMode()) {\\n    auto usb_drv = UsbSerialPort.uart;\\n    auto len = p_buf - buffer;\\n    for (uint8_t i = 0; i < len; i++) {\\n      usb_drv->sendByte(nullptr, buffer[i]);\\n    }\\n  }', 1)
 
 with open(src, 'w') as f:
     f.write(content)

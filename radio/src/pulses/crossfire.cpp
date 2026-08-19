@@ -227,7 +227,7 @@ static void crossfireSendPulses(void* ctx, uint8_t* buffer, int16_t* channels, u
 
   // When USB Serial mode is active, also forward CRSF data to USB VCP
   if (usbPluggedInVCPMode()) {
-    auto usb_drv = UsbSerialPort.driver;
+    auto usb_drv = UsbSerialPort.uart;
     auto len = p_buf - buffer;
     for (uint8_t i = 0; i < len; i++) {
       usb_drv->sendByte(nullptr, buffer[i]);
