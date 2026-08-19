@@ -13,23 +13,27 @@ jobs:
         with:
           repository: EdgeTX/edgetx
           ref: main
-          path: edgetx
           submodules: recursive
+
       - name: Checkout patch script
         uses: actions/checkout@v4
         with:
           repository: samatov1806/edgetx
           ref: main
           path: mypatch
+          submodules: recursive
+
       - name: Apply USB CRSF patch
         run: |
           cd $GITHUB_WORKSPACE/edgetx
           python3 $GITHUB_WORKSPACE/mypatch/.github/workflows/apply_patch.py
+
       - name: Install deps
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y cmake build-essential python3 wget xz-utils gcc-arm-none-eabi
           pip3 install pydantic 2>/dev/null || true
+
       - name: Build TX16S
         run: |
           cd $GITHUB_WORKSPACE/edgetx
@@ -37,6 +41,7 @@ jobs:
           cd build
           cmake .. -DPCB=X10 -DPCBREV=TX16S -DDEFAULT_MODE=2 -DTRANSLATIONS=EN -DRADIOMASTER_RELEASE=YES -DUSE_UNSUPPORTED_TOOLCHAIN=YES
           make firmware -j$(nproc)
+
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
